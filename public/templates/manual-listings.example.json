@@ -1,0 +1,27 @@
+[
+  {
+    "title": "42 Maple Street — Torquay",
+    "slug": "42-maple-street-torquay",
+    "location": "Torquay, VIC",
+    "price": "$895,000",
+    "yield": "4.2% p.a.",
+    "type": "House",
+    "description": "Near-new four-bedroom family home, short walk to esplanade. Demo manual listing — replace with your stock.",
+    "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    "bedrooms": "4",
+    "bathrooms": "2",
+    "garage": "2",
+    "rentYieldPercent": 4.2
+  },
+  {
+    "title": "The Dawson — Brunswick",
+    "location": "Brunswick, VIC",
+    "price": "$649,000",
+    "yield": "5.1% p.a.",
+    "type": "Apartment",
+    "image": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80",
+    "bedrooms": "2",
+    "bathrooms": "1",
+    "garage": "1"
+  }
+]

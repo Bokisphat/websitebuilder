@@ -1,0 +1,70 @@
+{
+  "updatedAt": "2026-04-30T22:16:44.754Z",
+  "capPages": 500,
+  "pagesFetched": 153,
+  "totalProjectsConsidered": 20,
+  "minRentYieldPercent": 5,
+  "pickCount": 6,
+  "picks": [
+    {
+      "id": "16454",
+      "slug": "otp",
+      "title": "[Estate] - Brassall",
+      "location": "Ipswich, Brassall, QLD, 4305,",
+      "price": "$1,101,800",
+      "yield": "6.14% p.a.",
+      "type": "Dual Occupancy",
+      "description": "",
+      "rentYieldPercent": 6.14,
+      "typeSearchText": "Dual Occupancy | otp | 16454 | [Estate] - Brassall | [Estate] | 1 | 571 | 182 | 3+2 | 2+1 | 1300.00 | 6.14 | 1101800.00 | 5 | Ipswich | QLD | Brassall | 91 | O.T.P. | 2026-04-24T01:39:06.000000Z | Ipswich, Brassall, QLD, 4305, | 16241 | [Estate] - Gatton | 2 | 0 | 771 | 781 | 198 | 1080.00 | 5.22 | 6.46 | 5.84 | 868900.00 | 1075900.00 | 972400.00 | Registered | Lockyer Valley Region | Gatton | 2026-04-29T23:56:06.000000Z | Lockyer Valley Region, Gatton, QLD, 4343, | 1+1 | $56,160 | 25695 | App\\Models\\Project | 4343 | 2026-04-08T06:06:11.000000Z | 16284 | Birdhaven Close - Moggill | 733 | 787 | 232 | 237 | 1590.00 | 4.89 | 4.95 | 4.92 | 1669380.00 | 1689236.00 | 1679308.00 | Brisbane | Moggill | 2026-04-16T03:58:53.000000Z | Brisbane , Moggill, QLD, 4070, | $82,680 | 25749 | 4070 | 2026-04-13T23:23:46.000000Z | 16307 | [Estate] - Morayfield | 450 | 215 | 4+2 | 1130.00 | 1180.00 | 1155.00 | 5.13 | 5.03 | 1195480.00 | Moryafield | 2026-04-28T23:16:06.000000Z | Brisbane, Moryafield, QLD, 4506, | $58,760-$61,360 | 25773 | 4506 | 2026-04-14T04:30:16.000000Z | 16317 | 469 | 227 | 1090.00 | 4.73 | 1199000.00 | 2026-04-28T04:29:02.000000Z | $56,680 | 25786 | 4305 | 2026-04-15T00:02:49.000000Z | $67,600 | 25936 | 2026-04-24T00:49:52.000000Z",
+      "projectId": "16454",
+      "imageUrls": [
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185009/Screenshot-2026-04-24-085617.png",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185008/Screenshot-2026-04-24-085607.png",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185010/Screenshot-2026-04-24-085626.png",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185011/Screenshot-2026-04-24-085635.png"
+      ],
+      "image": "https://piabimages.s3.amazonaws.com/media/projects/photo/185009/Screenshot-2026-04-24-085617.png"
+    },
+    {
+      "id": "16471",
+      "slug": "complete-4",
+      "title": "[Estate] - Boonah",
+      "location": "Scenic Rim Region, Boonah, QLD, 4310,",
+      "price": "$890,990",
+      "yield": "5.49% p.a.",
+      "type": "House and Land",
+      "description": "",
+      "rentYieldPercent": 5.49,
+      "typeSearchText": "House and Land | complete 4 | 16471 | [Estate] - Boonah | [Estate] | 1 | 737 | 181 | 940.00 | 5.49 | 890990.00 | Scenic Rim Region | QLD | Boonah | 92 | Complete | complete-4 | 2026-04-28T04:43:12.000000Z | Scenic Rim Region, Boonah, QLD, 4310, | 6461 | [Estate] - South Ripley | 4 | 0 | 280 | 149 | 550.00 | 630.00 | 590.00 | 3.49 | 3.96 | 3.76 | 899900.00 | 939900.00 | 919900.00 | Registered | Ipswich | South Ripley | 91 | O.T.P. | otp | 2026-04-29T23:27:24.000000Z | Ipswich, South Ripley, QLD, 4306, | $28,600-$32,760 | 7518 | App\\Models\\Project | 4306 | 2021-07-12T07:23:47.000000Z | 8193 | [Estate] - White Rock | 42 | 1013 | 481 | 153 | 190 | 408.00 | 745.00 | 587.00 | 2.47 | 4.84 | 3.56 | 850900.00 | 1306900.00 | 996489.00 | City of Ipswich | White Rock | 2026-04-29T23:47:53.000000Z | City of Ipswich, White Rock, QLD, 4306, | $21,216-$38,740 | 9250 | 2021-07-12T07:24:29.000000Z | 10588 | [Estate] - Morayfield | 3 | 272 | 165 | 650.00 | 3.36 | 3.61 | 3.52 | 944900.00 | Moreton Bay | Morayfield | 2026-04-30T00:43:43.000000Z | Moreton Bay , Morayfield, QLD, 4506, | $33,800 | 15182 | 4506 | 2022-07-25T04:33:51.000000Z | 11834 | [Estate] - Burpengary East | 10 | 903 | 197 | 600.00 | 750.00 | 651.00 | 2.60 | 4.31 | 3.50 | 1360900.00 | February 2021",
+      "projectId": "16471",
+      "imageUrls": [
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185443/Photo-1.jpeg",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185444/Screenshot-2026-04-28-at-7.42.34 AM.png",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185446/Photo-4.jpg",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185451/Photo-3.jpg"
+      ],
+      "image": "https://piabimages.s3.amazonaws.com/media/projects/photo/185443/Photo-1.jpeg"
+    },
+    {
+      "id": "16455",
+      "slug": "otp",
+      "title": "[Estate] - Regents Park",
+      "location": "Logan, Regents Park, QLD, 4118,",
+      "price": "$1,209,500",
+      "yield": "5.16% p.a.",
+      "type": "Dual Occupancy",
+      "description": "",
+      "rentYieldPercent": 5.16,
+      "typeSearchText": "Dual Occupancy | otp | 16455 | [Estate] - Regents Park | [Estate] | 1 | 500 | 185 | 3+2 | 2+1 | 1200.00 | 5.16 | 1209500.00 | 5 | Logan | QLD | Regents Park | 91 | O.T.P. | 2026-04-29T01:51:29.000000Z | Logan, Regents Park, QLD, 4118, | 16241 | [Estate] - Gatton | 2 | 0 | 771 | 781 | 198 | 1080.00 | 5.22 | 6.46 | 5.84 | 868900.00 | 1075900.00 | 972400.00 | Registered | Lockyer Valley Region | Gatton | 2026-04-29T23:56:06.000000Z | Lockyer Valley Region, Gatton, QLD, 4343, | 1+1 | $56,160 | 25695 | App\\Models\\Project | 4343 | 2026-04-08T06:06:11.000000Z | 16284 | Birdhaven Close - Moggill | 733 | 787 | 232 | 237 | 1590.00 | 4.89 | 4.95 | 4.92 | 1669380.00 | 1689236.00 | 1679308.00 | Brisbane | Moggill | 2026-04-16T03:58:53.000000Z | Brisbane , Moggill, QLD, 4070, | $82,680 | 25749 | 4070 | 2026-04-13T23:23:46.000000Z | 16307 | [Estate] - Morayfield | 450 | 215 | 4+2 | 1130.00 | 1180.00 | 1155.00 | 5.13 | 5.03 | 1195480.00 | Moryafield | 2026-04-28T23:16:06.000000Z | Brisbane, Moryafield, QLD, 4506, | $58,760-$61,360 | 25773 | 4506 | 2026-04-14T04:30:16.000000Z | 16317 | [Estate] - Brassall | 469 | 227 | 1090.00 | 4.73 | 1199000.00 | Ipswich | Brassall | 2026-04-28T04:29:02.000000Z | Ipswich, Brassall, QLD, 4305, | $56,680 | 25786 | 4305 | 2026-04-15T00:02:49.000000Z",
+      "projectId": "16455",
+      "imageUrls": [
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185021/Screenshot-2026-04-24-091158.png",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185022/Screenshot-2026-04-24-091208.png",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185259/Screenshot-2026-04-27-095905.png",
+        "https://piabimages.s3.amazonaws.com/media/projects/photo/185260/Screenshot-2026-04-27-095914.png"
+      ],
+      "image": "https://piabimages.s3.amazonaws.com/media/projects/photo/185021/Screenshot-2026-04-24-091158.png"
+    }
+  ]
+}
