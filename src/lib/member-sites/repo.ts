@@ -156,10 +156,18 @@ export async function updateSiteForSubscriber(
   const existing = await getSiteForSubscriber(subscriberId, siteId);
   if (!existing) return false;
 
-  const nextName = patch.name?.trim() || existing.name;
   let nextConfig = existing.config;
   if (patch.config) {
     nextConfig = { ...patch.config, id: siteId };
+  }
+
+  let nextName = existing.name;
+  if (patch.name !== undefined) {
+    const t = patch.name.trim();
+    if (t) nextName = t;
+  } else if (patch.config) {
+    const t = nextConfig.name?.trim() || nextConfig.branding?.siteName?.trim();
+    if (t) nextName = t;
   }
   const nextPublish =
     patch.publishStatus ??

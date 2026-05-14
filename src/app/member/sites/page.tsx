@@ -26,6 +26,7 @@ export default function MemberSitesPage() {
   const [errorHint, setErrorHint] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [memberNoInput, setMemberNoInput] = useState("");
+  const [newSiteName, setNewSiteName] = useState("");
 
   useEffect(() => {
     setMemberNoInput(getManualSubscriberId() ?? "");
@@ -79,10 +80,11 @@ export default function MemberSitesPage() {
     setError(null);
     setErrorHint(null);
     try {
+      const title = newSiteName.trim() || "New site";
       const res = await fetch("/api/member/sites", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...memberSitesClientHeaders() },
-        body: JSON.stringify({ name: "New site" }),
+        body: JSON.stringify({ name: title }),
       });
       const data = (await res.json().catch(() => ({}))) as { id?: string; error?: string; hint?: string };
       if (!res.ok) {
@@ -91,6 +93,7 @@ export default function MemberSitesPage() {
         return;
       }
       if (data.id) {
+        setNewSiteName("");
         router.push(`/builder?siteId=${encodeURIComponent(data.id)}`);
       }
     } finally {
@@ -181,7 +184,26 @@ export default function MemberSitesPage() {
           </div>
         ) : null}
 
-        <div className="mt-8 flex flex-wrap items-center gap-3">
+        <div className="mt-8 space-y-2">
+          <label className="block max-w-md">
+            <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">Name for next new site (optional)</span>
+            <input
+              type="text"
+              autoComplete="off"
+              placeholder="e.g. Smith portfolio"
+              value={newSiteName}
+              onChange={(e) => setNewSiteName(e.target.value)}
+              disabled={busy || atLimit || !hasSubscriberHeader}
+              className="mt-1 w-full rounded-lg border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-white outline-none focus:border-violet-500 disabled:opacity-50"
+            />
+          </label>
+          <p className="text-xs text-zinc-500">
+            Shown in your list below. You can also change <strong className="font-medium text-zinc-400">Site name</strong> in
+            the builder (Home page) — it will update this list after save.
+          </p>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => void createNew()}
