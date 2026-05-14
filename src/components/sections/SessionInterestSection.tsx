@@ -160,7 +160,7 @@ export function SessionInterestSection({
             </button>
           </form>
         ) : (
-          <p className="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <p className="mt-6 rounded-lg border border-emerald-600/25 bg-emerald-500/10 px-4 py-3 text-sm text-[var(--fs-heading)]">
             Thanks — we&apos;ll reply within one business day to confirm your preference and organise a time. (Demo: request
             was logged to the browser console only.)
           </p>

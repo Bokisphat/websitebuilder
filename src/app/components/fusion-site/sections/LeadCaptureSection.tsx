@@ -51,7 +51,7 @@ export function LeadCaptureSection({ section }: { section: LeadCaptureSectionCon
         </form>
 
         {sent ? (
-          <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <p className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-zinc-100">
             Thanks — this is a demo form; nothing was sent.
           </p>
         ) : null}
