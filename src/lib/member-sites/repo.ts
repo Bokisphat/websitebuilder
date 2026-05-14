@@ -187,3 +187,14 @@ export async function updateSiteForSubscriber(
   `;
   return true;
 }
+
+export async function deleteSiteForSubscriber(subscriberId: string, siteId: string): Promise<boolean> {
+  const sql = getSql();
+  if (!sql) return false;
+  const rows = await sql`
+    DELETE FROM member_saved_sites
+    WHERE id = CAST(${siteId} AS uuid) AND subscriber_id = ${subscriberId}
+    RETURNING id
+  `;
+  return Boolean(rows[0]);
+}

@@ -27,6 +27,7 @@ export default function MemberSitesPage() {
   const [busy, setBusy] = useState(false);
   const [memberNoInput, setMemberNoInput] = useState("");
   const [newSiteName, setNewSiteName] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     setMemberNoInput(getManualSubscriberId() ?? "");
@@ -101,7 +102,29 @@ export default function MemberSitesPage() {
     }
   };
 
+  const removeSite = async (s: SiteItem) => {
+    if (!window.confirm(`Delete “${s.name}”? This cannot be undone.`)) return;
+    setDeletingId(s.id);
+    setError(null);
+    setErrorHint(null);
+    try {
+      const res = await fetch(`/api/member/sites/${encodeURIComponent(s.id)}`, {
+        method: "DELETE",
+        headers: memberSitesClientHeaders(),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setError(data.error ?? `Delete failed (${res.status})`);
+        return;
+      }
+      await load();
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const atLimit = sites !== null && sites.length >= maxSites;
+  const listBusy = Boolean(deletingId);
   const hasSubscriberHeader =
     Boolean(getManualSubscriberId()) || Boolean(process.env.NEXT_PUBLIC_DEV_FUSION_SUBSCRIBER_ID?.trim());
 
@@ -193,7 +216,7 @@ export default function MemberSitesPage() {
               placeholder="e.g. Smith portfolio"
               value={newSiteName}
               onChange={(e) => setNewSiteName(e.target.value)}
-              disabled={busy || atLimit || !hasSubscriberHeader}
+              disabled={busy || listBusy || atLimit || !hasSubscriberHeader}
               className="mt-1 w-full rounded-lg border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-white outline-none focus:border-violet-500 disabled:opacity-50"
             />
           </label>
@@ -207,7 +230,7 @@ export default function MemberSitesPage() {
           <button
             type="button"
             onClick={() => void createNew()}
-            disabled={busy || atLimit || !hasSubscriberHeader}
+            disabled={busy || listBusy || atLimit || !hasSubscriberHeader}
             className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? "Creating…" : "New site"}
@@ -250,12 +273,22 @@ export default function MemberSitesPage() {
                   {s.publishStatus} · updated {new Date(s.updatedAt).toLocaleString()}
                 </p>
               </div>
-              <Link
-                href={`/builder?siteId=${encodeURIComponent(s.id)}`}
-                className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-white"
-              >
-                Open in builder
-              </Link>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={`/builder?siteId=${encodeURIComponent(s.id)}`}
+                  className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-white"
+                >
+                  Open in builder
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void removeSite(s)}
+                  disabled={listBusy}
+                  className="rounded-lg border border-red-900/60 px-3 py-1.5 text-sm font-medium text-red-300 hover:bg-red-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {deletingId === s.id ? "Deleting…" : "Delete"}
+                </button>
+              </div>
             </li>
           ))}
         </ul>

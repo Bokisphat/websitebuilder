@@ -1,5 +1,10 @@
 import { getFusionSubscriberIdFromRequest } from "@/lib/member-sites/auth";
-import { getSiteForSubscriber, isMemberSitesDatabaseConfigured, updateSiteForSubscriber } from "@/lib/member-sites/repo";
+import {
+  deleteSiteForSubscriber,
+  getSiteForSubscriber,
+  isMemberSitesDatabaseConfigured,
+  updateSiteForSubscriber,
+} from "@/lib/member-sites/repo";
 import { parseSiteConfigBody } from "@/lib/member-sites/validate-config";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -97,4 +102,32 @@ export async function PUT(req: Request, ctx: { params: Promise<{ siteId: string 
     config: row?.config,
     updatedAt: row?.updated_at,
   });
+}
+
+export async function DELETE(req: Request, ctx: { params: Promise<{ siteId: string }> }) {
+  if (!isMemberSitesDatabaseConfigured()) {
+    return jsonError(503, "Database is not configured (set POSTGRES_URL, DATABASE_URL, or Neon Storage env from Vercel)");
+  }
+
+  const { siteId } = await ctx.params;
+  if (!UUID_RE.test(siteId)) {
+    return jsonError(400, "Invalid site id");
+  }
+
+  const subscriberId = getFusionSubscriberIdFromRequest(req);
+  if (!subscriberId) {
+    return jsonError(401, "Missing Fusion subscriber. Send header X-Fusion-Subscriber-Id.");
+  }
+
+  try {
+    const deleted = await deleteSiteForSubscriber(subscriberId, siteId);
+    if (!deleted) {
+      return jsonError(404, "Site not found");
+    }
+    return Response.json({ ok: true });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[api/member/sites DELETE]", e);
+    return jsonError(500, msg);
+  }
 }
