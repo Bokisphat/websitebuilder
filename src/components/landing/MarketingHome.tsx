@@ -47,6 +47,12 @@ export function MarketingHome() {
               Listings & API
             </a>
             <Link
+              href="/member/sites"
+              className="text-zinc-600 transition hover:text-zinc-900"
+            >
+              My sites
+            </Link>
+            <Link
               href="/builder"
               className="rounded-lg bg-[#E89142] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d48238]"
             >

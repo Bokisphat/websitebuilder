@@ -27,6 +27,7 @@ import { LogoUploadField } from "@/components/builder/LogoUploadField";
 import { SitePreviewHeaderRow, type SitePreviewNavItem } from "@/components/site/SitePreviewHeaderRow";
 import { SiteThemeFrame } from "@/components/site/SiteThemeFrame";
 import { saveBuilderPreviewToStorage } from "@/lib/builder-preview-storage";
+import { memberSitesClientHeaders } from "@/lib/member-sites/client-fetch";
 import { duplicateSiteConfig } from "@/lib/site-generator";
 import type { SiteColorScheme, SiteConfig, SiteContentWidth, SiteTemplateId } from "@/lib/site-model";
 import {
@@ -144,10 +145,16 @@ type PexelsPickTarget =
   | { mode: "sectionImage"; sectionId: string }
   | { mode: "heroBackdrop"; sectionId: string };
 
+const MEMBER_SITE_ID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function BuilderPageInner() {
   const searchParams = useSearchParams();
+  const siteIdParam = searchParams.get("siteId");
   const templateParam = searchParams.get("template");
   const didApplyFromQuery = useRef(false);
+  const remoteSiteIdRef = useRef<string | null>(null);
+  const lastRemoteSaveJson = useRef<string>("");
   /** When true, choosing a template from the gallery should confirm before replacing the current site. */
   const browseForReplaceRef = useRef(false);
   const [phase, setPhase] = useState<BuilderPhase>("select");
@@ -204,18 +211,65 @@ function BuilderPageInner() {
   }, [applyTemplate, replaceConfirm]);
 
   useEffect(() => {
+    if (siteIdParam && MEMBER_SITE_ID_RE.test(siteIdParam)) return;
     if (didApplyFromQuery.current) return;
     if (!templateParam || !isSiteTemplateId(templateParam)) return;
     didApplyFromQuery.current = true;
     browseForReplaceRef.current = false;
     applyTemplate(templateParam);
-  }, [templateParam, applyTemplate]);
+  }, [siteIdParam, templateParam, applyTemplate]);
+
+  useEffect(() => {
+    if (!siteIdParam || !MEMBER_SITE_ID_RE.test(siteIdParam)) return;
+    let cancelled = false;
+    (async () => {
+      const res = await fetch(`/api/member/sites/${encodeURIComponent(siteIdParam)}`, {
+        headers: memberSitesClientHeaders(),
+      });
+      const data = (await res.json().catch(() => ({}))) as { config?: SiteConfig; error?: string };
+      if (!res.ok) {
+        console.warn("[builder] Could not load saved site:", data.error ?? res.status);
+        return;
+      }
+      if (!data.config || cancelled) return;
+      const cfg = withSiteConfigDefaults(data.config);
+      setSite(cfg);
+      setPhase("edit");
+      setEditorPageId("home");
+      browseForReplaceRef.current = false;
+      remoteSiteIdRef.current = siteIdParam;
+      lastRemoteSaveJson.current = JSON.stringify(cfg);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [siteIdParam]);
 
   useEffect(() => {
     if (phase !== "edit" || !site) return;
     const t = setTimeout(() => {
       saveBuilderPreviewToStorage(site);
     }, 400);
+    return () => clearTimeout(t);
+  }, [site, phase]);
+
+  useEffect(() => {
+    if (phase !== "edit" || !site) return;
+    const rid = remoteSiteIdRef.current;
+    if (!rid) return;
+    const serialized = JSON.stringify(site);
+    if (serialized === lastRemoteSaveJson.current) return;
+    const t = setTimeout(() => {
+      void fetch(`/api/member/sites/${encodeURIComponent(rid)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...memberSitesClientHeaders() },
+        body: JSON.stringify({ config: site }),
+      })
+        .then((r) => {
+          if (r.ok) lastRemoteSaveJson.current = serialized;
+        })
+        .catch(() => {});
+    }, 1200);
     return () => clearTimeout(t);
   }, [site, phase]);
 
@@ -307,6 +361,8 @@ function BuilderPageInner() {
   const handleDuplicate = useCallback(() => {
     setSite((prev) => (!prev ? prev : duplicateSiteConfig(prev)));
     setEditorPageId("home");
+    remoteSiteIdRef.current = null;
+    lastRemoteSaveJson.current = "";
   }, []);
 
   const handleAddSection = useCallback(() => {
