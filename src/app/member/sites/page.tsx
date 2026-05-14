@@ -23,6 +23,7 @@ export default function MemberSitesPage() {
   const [maxSites, setMaxSites] = useState<number>(6);
   const [subscriberId, setSubscriberId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorHint, setErrorHint] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [memberNoInput, setMemberNoInput] = useState("");
 
@@ -32,16 +33,19 @@ export default function MemberSitesPage() {
 
   const load = useCallback(async () => {
     setError(null);
+    setErrorHint(null);
     const res = await fetch("/api/member/sites", { headers: memberSitesClientHeaders() });
     const data = (await res.json().catch(() => ({}))) as {
       sites?: SiteItem[];
       maxSites?: number;
       subscriberId?: string;
       error?: string;
+      hint?: string;
     };
     if (!res.ok) {
       setSites(null);
       setError(data.error ?? `Request failed (${res.status})`);
+      setErrorHint(typeof data.hint === "string" ? data.hint : null);
       return;
     }
     setSites(data.sites ?? []);
@@ -56,6 +60,7 @@ export default function MemberSitesPage() {
   const applyMemberNumber = () => {
     const t = memberNoInput.trim();
     if (!t || !/^\d+$/.test(t)) {
+      setErrorHint(null);
       setError("Enter your Fusion member number (digits only, e.g. 9711).");
       return;
     }
@@ -72,15 +77,17 @@ export default function MemberSitesPage() {
   const createNew = async () => {
     setBusy(true);
     setError(null);
+    setErrorHint(null);
     try {
       const res = await fetch("/api/member/sites", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...memberSitesClientHeaders() },
         body: JSON.stringify({ name: "New site" }),
       });
-      const data = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
+      const data = (await res.json().catch(() => ({}))) as { id?: string; error?: string; hint?: string };
       if (!res.ok) {
         setError(data.error ?? `Create failed (${res.status})`);
+        setErrorHint(typeof data.hint === "string" ? data.hint : null);
         return;
       }
       if (data.id) {
@@ -159,6 +166,11 @@ export default function MemberSitesPage() {
         {error ? (
           <div className="mt-6 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
             {error}
+            {errorHint ? (
+              <span className="mt-2 block text-amber-200/90">
+                {errorHint}
+              </span>
+            ) : null}
             {error.includes("401") || error.toLowerCase().includes("missing fusion") ? (
               <span className="mt-2 block text-amber-200/90">
                 Enter your member number above and click <strong>Save &amp; load</strong>, or set{" "}
@@ -173,7 +185,7 @@ export default function MemberSitesPage() {
           <button
             type="button"
             onClick={() => void createNew()}
-            disabled={busy || atLimit || !!error || !hasSubscriberHeader}
+            disabled={busy || atLimit || !hasSubscriberHeader}
             className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? "Creating…" : "New site"}

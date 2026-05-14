@@ -94,7 +94,7 @@ export async function getSiteForSubscriber(
   const rows = await sql`
     SELECT id, subscriber_id, name, config, publish_status, created_at, updated_at
     FROM member_saved_sites
-    WHERE id = ${siteId}::uuid AND subscriber_id = ${subscriberId}
+    WHERE id = CAST(${siteId} AS uuid) AND subscriber_id = ${subscriberId}
     LIMIT 1
   `;
   const row = rows[0] as
@@ -133,10 +133,10 @@ export async function insertSite(
   const rows = await sql`
     INSERT INTO member_saved_sites (id, subscriber_id, name, config, publish_status)
     VALUES (
-      ${siteId}::uuid,
+      CAST(${siteId} AS uuid),
       ${subscriberId},
       ${name},
-      ${configStr}::jsonb,
+      CAST(${configStr} AS jsonb),
       ${publishStatus}
     )
     RETURNING id
@@ -172,10 +172,10 @@ export async function updateSiteForSubscriber(
     UPDATE member_saved_sites
     SET
       name = ${nextName},
-      config = ${configStr}::jsonb,
+      config = CAST(${configStr} AS jsonb),
       publish_status = ${pub},
       updated_at = NOW()
-    WHERE id = ${siteId}::uuid AND subscriber_id = ${subscriberId}
+    WHERE id = CAST(${siteId} AS uuid) AND subscriber_id = ${subscriberId}
   `;
   return true;
 }
