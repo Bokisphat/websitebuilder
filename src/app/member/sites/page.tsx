@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { memberSitesClientHeaders } from "@/lib/member-sites/client-fetch";
+import {
+  clearManualSubscriberId,
+  getManualSubscriberId,
+  memberSitesClientHeaders,
+  setManualSubscriberId,
+} from "@/lib/member-sites/client-fetch";
 
 type SiteItem = {
   id: string;
@@ -19,6 +24,11 @@ export default function MemberSitesPage() {
   const [subscriberId, setSubscriberId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [memberNoInput, setMemberNoInput] = useState("");
+
+  useEffect(() => {
+    setMemberNoInput(getManualSubscriberId() ?? "");
+  }, []);
 
   const load = useCallback(async () => {
     setError(null);
@@ -43,6 +53,22 @@ export default function MemberSitesPage() {
     void load();
   }, [load]);
 
+  const applyMemberNumber = () => {
+    const t = memberNoInput.trim();
+    if (!t || !/^\d+$/.test(t)) {
+      setError("Enter your Fusion member number (digits only, e.g. 9711).");
+      return;
+    }
+    setManualSubscriberId(t);
+    void load();
+  };
+
+  const clearSavedMemberNumber = () => {
+    clearManualSubscriberId();
+    setMemberNoInput("");
+    void load();
+  };
+
   const createNew = async () => {
     setBusy(true);
     setError(null);
@@ -66,6 +92,8 @@ export default function MemberSitesPage() {
   };
 
   const atLimit = sites !== null && sites.length >= maxSites;
+  const hasSubscriberHeader =
+    Boolean(getManualSubscriberId()) || Boolean(process.env.NEXT_PUBLIC_DEV_FUSION_SUBSCRIBER_ID?.trim());
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -84,9 +112,47 @@ export default function MemberSitesPage() {
           <code className="rounded bg-zinc-900 px-1 text-violet-300">X-Fusion-Subscriber-Id</code> on requests.
         </p>
 
+        <div className="mt-6 rounded-xl border border-zinc-700 bg-zinc-900/50 p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">Fusion member number</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Same id as in the CRM URL:{" "}
+            <code className="text-zinc-400">/users/subscriber/show/</code>
+            <strong className="text-zinc-300">9711</strong>. Stored only in this browser until IT connects Fusion.
+          </p>
+          <div className="mt-3 flex flex-wrap items-end gap-2">
+            <label className="block min-w-[12rem] flex-1">
+              <span className="sr-only">Member number</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="off"
+                placeholder="e.g. 9711"
+                value={memberNoInput}
+                onChange={(e) => setMemberNoInput(e.target.value.replace(/\D/g, ""))}
+                className="w-full rounded-lg border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-white outline-none focus:border-violet-500"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => applyMemberNumber()}
+              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500"
+            >
+              Save &amp; load
+            </button>
+            <button
+              type="button"
+              onClick={() => clearSavedMemberNumber()}
+              className="rounded-lg border border-zinc-600 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+
         {subscriberId ? (
           <p className="mt-3 text-xs text-zinc-500">
-            Subscriber: <span className="text-zinc-400">{subscriberId}</span>
+            Active subscriber: <span className="text-zinc-400">{subscriberId}</span>
           </p>
         ) : null}
 
@@ -95,9 +161,9 @@ export default function MemberSitesPage() {
             {error}
             {error.includes("401") || error.toLowerCase().includes("missing fusion") ? (
               <span className="mt-2 block text-amber-200/90">
-                For local testing, set <code className="rounded bg-black/30 px-1">MEMBER_SITES_DEV_SUBSCRIBER</code> in{" "}
-                <code className="rounded bg-black/30 px-1">.env.local</code> or{" "}
-                <code className="rounded bg-black/30 px-1">NEXT_PUBLIC_DEV_FUSION_SUBSCRIBER_ID</code> (demo only).
+                Enter your member number above and click <strong>Save &amp; load</strong>, or set{" "}
+                <code className="rounded bg-black/30 px-1">NEXT_PUBLIC_DEV_FUSION_SUBSCRIBER_ID</code> on Vercel for a
+                fixed demo id.
               </span>
             ) : null}
           </div>
@@ -107,7 +173,7 @@ export default function MemberSitesPage() {
           <button
             type="button"
             onClick={() => void createNew()}
-            disabled={busy || atLimit || !!error}
+            disabled={busy || atLimit || !!error || !hasSubscriberHeader}
             className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? "Creating…" : "New site"}
@@ -125,6 +191,10 @@ export default function MemberSitesPage() {
             </span>
           ) : null}
         </div>
+
+        {!hasSubscriberHeader ? (
+          <p className="mt-2 text-xs text-zinc-500">Save a member number above to enable New site.</p>
+        ) : null}
 
         {atLimit ? (
           <p className="mt-3 text-sm text-amber-200/90">
