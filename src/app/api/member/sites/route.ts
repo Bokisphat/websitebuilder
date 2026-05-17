@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { getFusionSubscriberIdFromRequest } from "@/lib/member-sites/auth";
-import { getMemberSitesMaxDefault } from "@/lib/member-sites/env";
+import { getMemberSitesMaxDefault, MEMBER_SITES_DB_ENV_HINT } from "@/lib/member-sites/env";
 import {
   countSitesForSubscriber,
   getMaxSitesForSubscriber,
@@ -20,7 +20,7 @@ function jsonError(status: number, message: string, extra?: Record<string, unkno
 export async function GET(req: Request) {
   try {
     if (!isMemberSitesDatabaseConfigured()) {
-      return jsonError(503, "Database is not configured (set POSTGRES_URL, DATABASE_URL, or Neon Storage env from Vercel)");
+      return jsonError(503, "Database is not configured for member saved sites.", { hint: MEMBER_SITES_DB_ENV_HINT });
     }
 
     const subscriberId = getFusionSubscriberIdFromRequest(req);
@@ -56,7 +56,7 @@ function dbErrorHint(message: string): { hint?: string } {
 export async function POST(req: Request) {
   try {
     if (!isMemberSitesDatabaseConfigured()) {
-      return jsonError(503, "Database is not configured (set POSTGRES_URL, DATABASE_URL, or Neon Storage env from Vercel)");
+      return jsonError(503, "Database is not configured for member saved sites.", { hint: MEMBER_SITES_DB_ENV_HINT });
     }
 
     const subscriberId = getFusionSubscriberIdFromRequest(req);

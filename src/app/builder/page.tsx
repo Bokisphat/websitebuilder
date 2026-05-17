@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BuilderDualKeyEditor } from "@/components/builder/BuilderDualKeyEditor";
 import { BuilderFeaturedListingsEditor } from "@/components/builder/BuilderFeaturedListingsEditor";
 import { BuilderHeroEditor } from "@/components/builder/BuilderHeroEditor";
@@ -149,6 +149,7 @@ const MEMBER_SITE_ID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function BuilderPageInner() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const siteIdParam = searchParams.get("siteId");
   const templateParam = searchParams.get("template");
@@ -157,6 +158,11 @@ function BuilderPageInner() {
   const lastRemoteSaveJson = useRef<string>("");
   /** When true, choosing a template from the gallery should confirm before replacing the current site. */
   const browseForReplaceRef = useRef(false);
+  /** Set when navigating from /member/sites "New site" — template pick persists via POST with templateId. */
+  const memberPendingCreateRef = useRef<{ name: string } | null>(null);
+  const memberCreateSubmittingRef = useRef(false);
+  const [memberCreateError, setMemberCreateError] = useState<string | null>(null);
+  const [memberCreateSubmitting, setMemberCreateSubmitting] = useState(false);
   const [phase, setPhase] = useState<BuilderPhase>("select");
   const [site, setSite] = useState<SiteConfig | null>(null);
   const [replaceConfirm, setReplaceConfirm] = useState<SiteTemplateId | null>(null);
@@ -177,6 +183,27 @@ function BuilderPageInner() {
     browseForReplaceRef.current = false;
     setPhase("edit");
   }, []);
+
+  useEffect(() => {
+    if (siteIdParam && MEMBER_SITE_ID_RE.test(siteIdParam)) {
+      memberPendingCreateRef.current = null;
+      return;
+    }
+    if (searchParams.get("memberNew") === "1") {
+      const raw = searchParams.get("name");
+      let name = "New site";
+      if (raw) {
+        try {
+          name = decodeURIComponent(raw).trim() || "New site";
+        } catch {
+          name = raw.trim() || "New site";
+        }
+      }
+      memberPendingCreateRef.current = { name };
+    } else {
+      memberPendingCreateRef.current = null;
+    }
+  }, [siteIdParam, searchParams]);
 
   const goToTemplateGallery = useCallback(
     (fromEdit: boolean) => {
@@ -199,9 +226,66 @@ function BuilderPageInner() {
         setReplaceConfirm(id);
         return;
       }
+
+      const pending = memberPendingCreateRef.current;
+      if (pending) {
+        if (memberCreateSubmittingRef.current) return;
+        memberCreateSubmittingRef.current = true;
+        setMemberCreateSubmitting(true);
+        setMemberCreateError(null);
+
+        void (async () => {
+          try {
+            const res = await fetch("/api/member/sites", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", ...memberSitesClientHeaders() },
+              body: JSON.stringify({ name: pending.name, templateId: id }),
+            });
+            const data = (await res.json().catch(() => ({}))) as {
+              id?: string;
+              config?: SiteConfig;
+              error?: string;
+              hint?: string;
+            };
+            if (!res.ok) {
+              const msg =
+                data.error ??
+                (res.status === 403 ? "Site limit reached." : `Could not create site (${res.status})`);
+              const hint = typeof data.hint === "string" ? data.hint : "";
+              setMemberCreateError(hint ? `${msg} ${hint}` : msg);
+              memberCreateSubmittingRef.current = false;
+              setMemberCreateSubmitting(false);
+              return;
+            }
+            if (data.id && data.config) {
+              const cfg = withSiteConfigDefaults(data.config);
+              setSite(cfg);
+              setEditorPageId("home");
+              browseForReplaceRef.current = false;
+              remoteSiteIdRef.current = data.id;
+              lastRemoteSaveJson.current = JSON.stringify(cfg);
+              memberPendingCreateRef.current = null;
+              memberCreateSubmittingRef.current = false;
+              setMemberCreateSubmitting(false);
+              setPhase("edit");
+              router.replace(`/builder?siteId=${encodeURIComponent(data.id)}`);
+            } else {
+              setMemberCreateError("Invalid response from server.");
+              memberCreateSubmittingRef.current = false;
+              setMemberCreateSubmitting(false);
+            }
+          } catch {
+            setMemberCreateError("Network error. Check your connection and try again.");
+            memberCreateSubmittingRef.current = false;
+            setMemberCreateSubmitting(false);
+          }
+        })();
+        return;
+      }
+
       applyTemplate(id);
     },
-    [applyTemplate, site],
+    [applyTemplate, site, router],
   );
 
   const confirmTemplateReplace = useCallback(() => {
@@ -421,7 +505,26 @@ function BuilderPageInner() {
               and lead capture built for CRM workflows. Pick a template to preload copy, section order, and CTAs, then
               customise in the editor.
             </p>
+            {searchParams.get("memberNew") === "1" && !siteIdParam ? (
+              <p className="mt-4 text-sm leading-relaxed text-zinc-700">
+                You&apos;re creating a new saved site. Choose a template below — it will be stored under your member
+                account and listed on{" "}
+                <Link href="/member/sites" className="font-medium text-[var(--fusion-builder-accent)] hover:underline">
+                  My sites
+                </Link>
+                .
+              </p>
+            ) : null}
           </header>
+
+          {memberCreateError ? (
+            <div
+              className="mx-auto mt-8 max-w-xl rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-center text-sm text-red-900"
+              role="alert"
+            >
+              {memberCreateError}
+            </div>
+          ) : null}
 
           {site ? (
             <p className="mt-6 text-center">
@@ -438,7 +541,11 @@ function BuilderPageInner() {
             </p>
           ) : null}
           <div className="mt-14">
-            <BuilderTemplateGallery items={HOMEPAGE_TEMPLATE_ITEMS} onChooseTemplate={onPickTemplate} />
+            <BuilderTemplateGallery
+              items={HOMEPAGE_TEMPLATE_ITEMS}
+              onChooseTemplate={onPickTemplate}
+              disabled={memberCreateSubmitting}
+            />
           </div>
         </main>
       </div>
@@ -499,6 +606,19 @@ function BuilderPageInner() {
         <aside className="max-h-[calc(100vh-56px)] overflow-y-auto border-b border-zinc-300/90 p-6 lg:border-b-0">
           <h1 className="text-xl font-bold text-zinc-900">Edit site</h1>
           <p className="mt-1 text-sm text-zinc-500">Changes apply to the live preview immediately.</p>
+
+          <div className="mt-5 rounded-xl border border-zinc-300/90 bg-white/90 p-4 shadow-sm">
+            <Field label="Site name">
+              <input
+                value={site.branding.siteName}
+                onChange={(e) => setSiteName(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-[var(--fusion-builder-accent)]/70"
+              />
+            </Field>
+            <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+              Shown in the header and on your member sites list. Editable from any page tab.
+            </p>
+          </div>
 
           <div className="mt-5 space-y-3 rounded-xl border border-zinc-300/90 bg-white/90 p-4 shadow-sm">
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">Pages</p>
@@ -761,13 +881,6 @@ function BuilderPageInner() {
           </div>
 
           <div className="mt-8 space-y-6">
-            <Field label="Site name">
-              <input
-                value={site.branding.siteName}
-                onChange={(e) => setSiteName(e.target.value)}
-                className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-[var(--fusion-builder-accent)]/70"
-              />
-            </Field>
             <Field label="Logo">
               <LogoUploadField logo={site.branding.logo || undefined} onChange={(next) => setBranding({ logo: next ?? "" })} />
             </Field>
@@ -898,7 +1011,7 @@ function BuilderPageInner() {
             <div className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50/90 p-4 text-xs text-zinc-600">
               <p className="font-medium text-zinc-800">Editing {activePage?.name ?? "this page"}</p>
               <p className="mt-2 leading-relaxed">
-                Template, publish, site name, logo, contact details, colours, content width, and duplicate site are on the{" "}
+                Template, publish, logo, contact details, colours, content width, and duplicate site are on the{" "}
                 <button
                   type="button"
                   onClick={() => setEditorPageId("home")}

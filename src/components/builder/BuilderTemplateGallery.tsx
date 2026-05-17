@@ -7,9 +7,12 @@ import { HomeTemplatePreview } from "@/components/landing/HomeTemplatePreview";
 export function BuilderTemplateGallery({
   items,
   onChooseTemplate,
+  disabled = false,
 }: {
   items: HomeTemplateItem[];
   onChooseTemplate: (id: SiteTemplateId) => void;
+  /** True while creating a member-saved site after template pick */
+  disabled?: boolean;
 }) {
   return (
     <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -33,10 +36,11 @@ export function BuilderTemplateGallery({
             {isLive && item.siteTemplateId ? (
               <button
                 type="button"
-                onClick={() => onChooseTemplate(item.siteTemplateId!)}
-                className="mt-6 w-full rounded-xl bg-[var(--fusion-builder-accent)] py-3 text-sm font-semibold text-white transition hover:bg-[var(--fusion-builder-accent-hover)]"
+                disabled={disabled}
+                onClick={() => !disabled && onChooseTemplate(item.siteTemplateId!)}
+                className="mt-6 w-full rounded-xl bg-[var(--fusion-builder-accent)] py-3 text-sm font-semibold text-white transition hover:bg-[var(--fusion-builder-accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Use template
+                {disabled ? "Creating site…" : "Use template"}
               </button>
             ) : (
               <p

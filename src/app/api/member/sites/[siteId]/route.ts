@@ -1,4 +1,5 @@
 import { getFusionSubscriberIdFromRequest } from "@/lib/member-sites/auth";
+import { MEMBER_SITES_DB_ENV_HINT } from "@/lib/member-sites/env";
 import {
   deleteSiteForSubscriber,
   getSiteForSubscriber,
@@ -15,7 +16,7 @@ function jsonError(status: number, message: string, extra?: Record<string, unkno
 
 export async function GET(req: Request, ctx: { params: Promise<{ siteId: string }> }) {
   if (!isMemberSitesDatabaseConfigured()) {
-    return jsonError(503, "Database is not configured (set POSTGRES_URL, DATABASE_URL, or Neon Storage env from Vercel)");
+    return jsonError(503, "Database is not configured for member saved sites.", { hint: MEMBER_SITES_DB_ENV_HINT });
   }
 
   const { siteId } = await ctx.params;
@@ -47,7 +48,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ siteId: string 
 
 export async function PUT(req: Request, ctx: { params: Promise<{ siteId: string }> }) {
   if (!isMemberSitesDatabaseConfigured()) {
-    return jsonError(503, "Database is not configured (set POSTGRES_URL, DATABASE_URL, or Neon Storage env from Vercel)");
+    return jsonError(503, "Database is not configured for member saved sites.", { hint: MEMBER_SITES_DB_ENV_HINT });
   }
 
   const { siteId } = await ctx.params;
@@ -106,7 +107,7 @@ export async function PUT(req: Request, ctx: { params: Promise<{ siteId: string 
 
 export async function DELETE(req: Request, ctx: { params: Promise<{ siteId: string }> }) {
   if (!isMemberSitesDatabaseConfigured()) {
-    return jsonError(503, "Database is not configured (set POSTGRES_URL, DATABASE_URL, or Neon Storage env from Vercel)");
+    return jsonError(503, "Database is not configured for member saved sites.", { hint: MEMBER_SITES_DB_ENV_HINT });
   }
 
   const { siteId } = await ctx.params;

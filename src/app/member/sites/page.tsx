@@ -24,7 +24,6 @@ export default function MemberSitesPage() {
   const [subscriberId, setSubscriberId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorHint, setErrorHint] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const [memberNoInput, setMemberNoInput] = useState("");
   const [newSiteName, setNewSiteName] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -76,30 +75,15 @@ export default function MemberSitesPage() {
     void load();
   };
 
-  const createNew = async () => {
-    setBusy(true);
+  const createNew = () => {
     setError(null);
     setErrorHint(null);
-    try {
-      const title = newSiteName.trim() || "New site";
-      const res = await fetch("/api/member/sites", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...memberSitesClientHeaders() },
-        body: JSON.stringify({ name: title }),
-      });
-      const data = (await res.json().catch(() => ({}))) as { id?: string; error?: string; hint?: string };
-      if (!res.ok) {
-        setError(data.error ?? `Create failed (${res.status})`);
-        setErrorHint(typeof data.hint === "string" ? data.hint : null);
-        return;
-      }
-      if (data.id) {
-        setNewSiteName("");
-        router.push(`/builder?siteId=${encodeURIComponent(data.id)}`);
-      }
-    } finally {
-      setBusy(false);
-    }
+    const title = newSiteName.trim() || "New site";
+    setNewSiteName("");
+    const q = new URLSearchParams();
+    q.set("memberNew", "1");
+    q.set("name", title);
+    router.push(`/builder?${q.toString()}`);
   };
 
   const removeSite = async (s: SiteItem) => {
@@ -216,13 +200,13 @@ export default function MemberSitesPage() {
               placeholder="e.g. Smith portfolio"
               value={newSiteName}
               onChange={(e) => setNewSiteName(e.target.value)}
-              disabled={busy || listBusy || atLimit || !hasSubscriberHeader}
+              disabled={listBusy || atLimit || !hasSubscriberHeader}
               className="mt-1 w-full rounded-lg border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-white outline-none focus:border-violet-500 disabled:opacity-50"
             />
           </label>
           <p className="text-xs text-zinc-500">
-            Shown in your list below. You can also change <strong className="font-medium text-zinc-400">Site name</strong> in
-            the builder (Home page) — it will update this list after save.
+            After <strong className="font-medium text-zinc-400">New site</strong>, you&apos;ll choose a template, then the
+            editor opens. The name appears in your list below; you can rename anytime in the builder.
           </p>
         </div>
 
@@ -230,10 +214,10 @@ export default function MemberSitesPage() {
           <button
             type="button"
             onClick={() => void createNew()}
-            disabled={busy || listBusy || atLimit || !hasSubscriberHeader}
+            disabled={listBusy || atLimit || !hasSubscriberHeader}
             className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {busy ? "Creating…" : "New site"}
+            New site
           </button>
           <button
             type="button"
