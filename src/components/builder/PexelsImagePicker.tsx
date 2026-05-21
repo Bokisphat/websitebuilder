@@ -231,7 +231,7 @@ export function PexelsImagePicker({
         </div>
 
         {source === "ai" ? (
-          <div className="flex min-h-0 flex-1 flex-col border-b border-zinc-200 p-3 sm:p-4">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto border-b border-zinc-200 p-3 sm:p-4">
             <label className="block text-xs font-medium text-zinc-700">
               Prompt
               <textarea
@@ -250,13 +250,25 @@ export function PexelsImagePicker({
             >
               {aiLoading ? "Generating…" : "Generate image"}
             </button>
-            {error && source === "ai" ? <p className="mt-2 text-sm text-amber-200/90">{error}</p> : null}
+            {error && source === "ai" ? <p className="mt-2 text-sm text-amber-800">{error}</p> : null}
             {aiPreview ? (
               <div className="mt-4">
-                <p className="mb-2 text-xs text-zinc-500">Click use image to add it to the section.</p>
-                <div className="overflow-hidden rounded-xl border border-zinc-200">
-                  <img src={aiPreview.url} alt="" className="max-h-64 w-full object-cover" />
-                </div>
+                <p className="mb-2 text-xs text-zinc-500">
+                  Tap the image below or choose <strong className="text-zinc-700">Use this image</strong> to add it to the
+                  section.
+                </p>
+                <button
+                  type="button"
+                  onClick={applyAiSelection}
+                  className="group w-full overflow-hidden rounded-xl border-2 border-zinc-200 text-left outline-none ring-[var(--fusion-builder-accent)]/0 transition hover:border-[var(--fusion-builder-accent)]/55 focus-visible:ring-2 focus-visible:ring-[var(--fusion-builder-accent)]/45"
+                >
+                  <img
+                    src={aiPreview.url}
+                    alt=""
+                    className="max-h-72 w-full object-cover"
+                  />
+                  <span className="sr-only">Use this generated image</span>
+                </button>
                 <button
                   type="button"
                   onClick={applyAiSelection}
@@ -296,7 +308,7 @@ export function PexelsImagePicker({
 
         {source !== "ai" ? (
           <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
-            {error ? <p className="mb-3 text-sm text-amber-200/90">{error}</p> : null}
+            {error ? <p className="mb-3 text-sm text-amber-800">{error}</p> : null}
             {loading && !rows.length ? (
               <p className="text-sm text-zinc-500">Loading…</p>
             ) : (
